@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        button {
+            padding: 5px 10px;
+            background-color: #5cb85c;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #4cae4c;
+        }
+
+        #noUsersMessage {
+            text-align: center;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Available Users</h2>
+        <ul id="userList">
+            <!-- <li>Jane Doe <button onclick="startChat('Jane Doe')">Start Chat</button></li>
+            <li>John Smith <button onclick="startChat('John Smith')">Start Chat</button></li> -->
+            <!-- More users will be listed here -->
+        </ul>
+
+        <p id="noUsersMessage" style="display: none;">No users available.</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const userList = document.getElementById('userList');
+            const noUsersMessage = document.getElementById('noUsersMessage');
+
+            // Fetch the list of users
+            fetch('/user/users', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`, // Send token for authentication
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.users.length > 0) {
+                    userList.innerHTML = data.users.map(user => 
+                        `<li>${user.username} <button onclick="startChat('${user.username}')">Start Chat</button></li>`
+                    ).join('');
+                } else {
+                    noUsersMessage.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                noUsersMessage.textContent = 'Error fetching users.';
+                noUsersMessage.style.display = 'block';
+            });
+        });
+
+        function startChat(userName) {
+            // Fetch chatId and then redirect
+            fetch(`/chat/chats?userName=${encodeURIComponent(userName)}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}` // Send token for authentication
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.chatId) {
+                    window.location.href = `/chats?chatId=${data.chatId}&userName=${encodeURIComponent(userName)}`;
+                } else {
+                    console.error('Failed to get chat ID');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>
